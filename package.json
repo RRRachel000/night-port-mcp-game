@@ -1,0 +1,30 @@
+{
+  "name": "night-port-mcp-game",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "《不夜港：最后一班船》多人策略游戏规则引擎与 MCP 服务器",
+  "scripts": {
+    "start": "tsx src/authoritative-server.ts",
+    "test": "tsx --test tests/**/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "smoke:mcp": "tsx scripts/mcp-smoke.ts",
+    "demo:seed": "tsx scripts/create-demo-game.ts",
+    "stdio": "tsx src/mcp-server.ts",
+    "web": "tsx src/authoritative-server.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/client": "latest",
+    "@modelcontextprotocol/node": "^2.0.0",
+    "@modelcontextprotocol/server": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "tsx": "latest",
+    "typescript": "latest"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

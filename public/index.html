@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0f172a">
+    <title>不夜港 · 观战台</title>
+    <link rel="stylesheet" href="/styles.css?v=1">
+  </head>
+  <body>
+    <a class="skip-link" href="#game-board">跳到游戏桌面</a>
+    <header class="site-header">
+      <div class="brand-lockup">
+        <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true">
+          <path d="M7 36h34M13 36V21h22v15M19 21V12h10v9M24 7v5M10 29h28" />
+          <circle cx="24" cy="7" r="2" />
+        </svg>
+        <div>
+          <p class="eyebrow">Night Port Control</p>
+          <h1 id="game-title">不夜港：最后一班船</h1>
+        </div>
+      </div>
+      <div class="toolbar">
+        <label class="game-picker">
+          <span>观战房间</span>
+          <select id="game-select" aria-label="选择观战房间"></select>
+        </label>
+        <button id="refresh-button" class="icon-button" type="button" aria-label="立即刷新游戏状态" title="立即刷新">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.34 5.66M20 4v7h-7" /></svg>
+        </button>
+        <span id="connection-status" class="connection-status" role="status" aria-live="polite">正在连接</span>
+      </div>
+    </header>
+
+    <main id="game-board" class="app-shell" tabindex="-1">
+      <section class="status-rail" aria-label="当前局势">
+        <article class="status-block round-block">
+          <span class="status-label">航程</span>
+          <strong id="round-value">—</strong>
+          <span id="phase-value" class="status-detail">等待房间</span>
+        </article>
+        <article class="status-block price-block cold-chain-price">
+          <span class="cargo-dot" aria-hidden="true"></span>
+          <span><span class="status-label">冷链货价</span><strong id="cold-chain-price">—</strong></span>
+        </article>
+        <article class="status-block price-block ambient-price">
+          <span class="cargo-dot" aria-hidden="true"></span>
+          <span><span class="status-label">常温货价</span><strong id="ambient-price">—</strong></span>
+        </article>
+        <article class="status-block turn-block">
+          <span class="status-label">当前行动</span>
+          <strong id="current-player">—</strong>
+          <span id="version-value" class="status-detail">状态版本 —</span>
+        </article>
+        <div id="events" class="event-strip" aria-label="本轮事件"></div>
+      </section>
+
+      <div id="empty-state" class="empty-state" hidden>
+        <svg viewBox="0 0 80 80" aria-hidden="true"><path d="M12 59h56M19 59V37h42v22M29 37V21h22v16M40 13v8" /></svg>
+        <h2>港口还没有开灯</h2>
+        <p>先通过 MCP 创建一局，观战台会自动发现并加载房间。</p>
+      </div>
+
+      <section id="dashboard" class="dashboard" hidden>
+        <section class="panel orders-panel" aria-labelledby="orders-heading">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Shared contracts</p>
+              <h2 id="orders-heading">公开委托</h2>
+            </div>
+            <span id="order-count" class="count-badge">0</span>
+          </div>
+          <div id="orders-list" class="orders-list"></div>
+        </section>
+
+        <section class="panel market-panel" aria-labelledby="market-heading">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">18 cargo berths</p>
+              <h2 id="market-heading">港区货运市场</h2>
+            </div>
+            <div class="market-legend" aria-label="货运市场图例">
+              <span><i class="legend-swatch inspection-swatch" aria-hidden="true"></i>海关查验货</span>
+              <span><i class="legend-swatch empty-swatch" aria-hidden="true"></i>空位</span>
+            </div>
+          </div>
+          <div id="market-grid" class="market-grid"></div>
+          <div id="pass-chain" class="pass-chain" aria-live="polite"></div>
+        </section>
+
+        <section class="panel players-panel" aria-labelledby="players-heading">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Public ledgers</p>
+              <h2 id="players-heading">三家商会</h2>
+            </div>
+          </div>
+          <div id="players-list" class="players-list"></div>
+        </section>
+      </section>
+
+      <section id="log-panel" class="panel log-panel" hidden aria-labelledby="log-heading">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Authoritative record</p>
+            <h2 id="log-heading">港口日志</h2>
+          </div>
+          <span class="auto-refresh-label">每 2 秒同步</span>
+        </div>
+        <ol id="log-list" class="log-list"></ol>
+      </section>
+    </main>
+    <script type="module" src="/app.js?v=1"></script>
+  </body>
+</html>
