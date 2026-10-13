@@ -206,6 +206,16 @@ export class NightPortGame {
     return structuredClone(this.state);
   }
 
+  /** Operator-side takeover: change only the seat credential, preserving its identity and holdings. */
+  rotatePlayerToken(input: { playerId: string; playerToken: string; expectedStateVersion: number }): string {
+    this.assertVersion(input.expectedStateVersion);
+    const player = this.authorize(input.playerId, input.playerToken);
+    player.token = randomUUID();
+    this.addLog("controller_replaced", `${player.name} 的控制连接已更新，席位与局面保留。`, { playerId: player.id });
+    this.commit();
+    return player.token;
+  }
+
   joinPlayer(input: {
     playerId: string;
     playerName: string;

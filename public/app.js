@@ -8,7 +8,9 @@ const emptyState = $("#empty-state");
 
 let selectedGameId = new URLSearchParams(location.search).get("game");
 let renderedVersion = null;
+let renderedAutomation = null;
 let refreshTimer = null;
+let lastSynchronizedAt = null;
 
 const commodityCategory = {
   seafood: "cold_chain",
@@ -78,18 +80,22 @@ async function loadState(force = false) {
     const response = await fetch(`/api/games/${encodeURIComponent(selectedGameId)}`, { cache: "no-store" });
     if (!response.ok) throw new Error("房间状态不可用");
     const state = await response.json();
-    if (force || state.stateVersion !== renderedVersion) {
+    const automation = JSON.stringify(state.automation ?? null);
+    if (force || state.stateVersion !== renderedVersion || automation !== renderedAutomation) {
       render(state);
       renderedVersion = state.stateVersion;
+      renderedAutomation = automation;
     }
     setConnection("online", "已同步");
+    lastSynchronizedAt = new Date();
   } catch (error) {
-    setConnection("error", "连接中断");
+    setConnection("error", `连接中断${lastSynchronizedAt ? ` · 上次 ${lastSynchronizedAt.toLocaleTimeString()}` : ""}`);
     console.error(error);
   }
 }
 
 function showEmpty() {
+  $("#automation-status").hidden = true;
   emptyState.hidden = false;
   dashboard.hidden = true;
   logPanel.hidden = true;
@@ -107,6 +113,10 @@ function render(state) {
   $("#ambient-price").textContent = state.prices.ambient;
   $("#current-player").textContent = playerName(state, state.currentPlayer);
   $("#version-value").textContent = `状态版本 ${state.stateVersion}`;
+  const automationStatus = $("#automation-status");
+  automationStatus.hidden = !state.automation;
+  automationStatus.textContent = state.automation?.message ?? "";
+  automationStatus.dataset.status = state.automation?.status ?? "";
   renderEvents(state.events);
   renderOrders(state.orders);
   renderMarket(state.market);

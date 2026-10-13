@@ -3,6 +3,11 @@ import { resolve } from "node:path";
 
 import { GameRuleError, NightPortGame, type CreateGameInput } from "./engine.js";
 import type { GameSnapshot } from "./types.js";
+import { emptyWindowControl, type WindowControl } from "./window-types.js";
+
+interface StoredSnapshot extends GameSnapshot {
+  windowControl?: WindowControl;
+}
 
 function safeFileName(gameId: string): string {
   if (!/^[A-Za-z0-9_-]{1,100}$/.test(gameId)) {
@@ -17,6 +22,7 @@ function safeFileName(gameId: string): string {
 export class GameStore {
   private readonly directory: string;
   private readonly games = new Map<string, NightPortGame>();
+  private readonly controls = new Map<string, WindowControl>();
 
   constructor(directory = process.env.NIGHT_PORT_DATA_DIR ?? resolve("data", "games")) {
     this.directory = resolve(directory);
@@ -29,7 +35,6 @@ export class GameStore {
     if (existsSync(path)) {
       throw new GameRuleError("GAME_ID_EXISTS", `Game '${created.game.id}' already exists.`);
     }
-    this.games.set(created.game.id, created.game);
     this.save(created.game);
     return created;
   }
@@ -41,16 +46,46 @@ export class GameStore {
     if (!existsSync(path)) {
       throw new GameRuleError("GAME_NOT_FOUND", `Game '${gameId}' was not found.`);
     }
-    const snapshot = JSON.parse(readFileSync(path, "utf8")) as GameSnapshot;
+    const { windowControl, ...snapshot } = JSON.parse(readFileSync(path, "utf8")) as StoredSnapshot;
     const game = NightPortGame.fromSnapshot(snapshot);
+    if (windowControl !== undefined) {
+      if (windowControl.schemaVersion !== 1) throw new Error("Unsupported window control schema.");
+      this.controls.set(gameId, windowControl);
+    }
     this.games.set(gameId, game);
     return game;
   }
 
   save(game: NightPortGame): void {
+    this.persist(game, this.controls.get(game.id));
+    this.games.set(game.id, game);
+  }
+
+  windowControl(gameId: string): WindowControl | undefined {
+    this.get(gameId);
+    const control = this.controls.get(gameId);
+    return control === undefined ? undefined : structuredClone(control);
+  }
+
+  /** Publish the new in-memory state only after its game, jobs and receipts reach disk together. */
+  transaction<T>(gameId: string, operation: (game: NightPortGame, control: WindowControl) => T): T {
+    const original = this.get(gameId);
+    const game = NightPortGame.fromSnapshot(original.exportSnapshot(), original.config);
+    const previous = this.controls.get(gameId);
+    const control = structuredClone(previous ?? emptyWindowControl());
+    const output = operation(game, control);
+    const changedControl = previous !== undefined || control.routes.length > 0 || control.jobs.length > 0;
+    this.persist(game, changedControl ? control : undefined);
+    this.games.set(gameId, game);
+    if (changedControl) this.controls.set(gameId, control);
+    return output;
+  }
+
+  protected persist(game: NightPortGame, control?: WindowControl): void {
     const target = this.pathFor(game.id);
     const temporary = `${target}.tmp`;
-    writeFileSync(temporary, `${JSON.stringify(game.exportSnapshot(), null, 2)}\n`, "utf8");
+    const snapshot: StoredSnapshot = { ...game.exportSnapshot(), ...(control === undefined ? {} : { windowControl: control }) };
+    writeFileSync(temporary, `${JSON.stringify(snapshot, null, 2)}\n`, { encoding: "utf8", mode: 0o600 });
     renameSync(temporary, target);
   }
 
@@ -65,4 +100,3 @@ export class GameStore {
     return resolve(this.directory, safeFileName(gameId));
   }
 }
-

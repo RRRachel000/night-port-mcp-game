@@ -9,5 +9,11 @@ dist/
 *.pfx
 data/games/*.json
 data/games/*.tmp
+data/games/.authority-lock/
+data/games/.authority-starting/
 coverage/
 *.log
+.local/
+.wrangler/
+.dev.vars
+.dev.vars.*

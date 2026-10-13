@@ -229,7 +229,8 @@ h2 { font-size: 18px; }
   .toolbar { width: 100%; }
   .game-picker { flex: 1; }
   .game-picker select { width: 100%; min-width: 0; }
-  .connection-status { display: none; }
+  .toolbar { flex-wrap: wrap; }
+  .connection-status { flex-basis: 100%; min-width: 0; overflow-wrap: anywhere; }
   .status-rail { grid-template-columns: repeat(2, 1fr); }
   .event-strip { min-height: 62px; }
   .dashboard { grid-template-columns: 1fr; }
@@ -249,6 +250,10 @@ h2 { font-size: 18px; }
   .market-legend { display: none; }
   .brand-mark { width: 34px; }
 }
+
+.automation-status { margin: 12px 0; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px 14px; background: var(--muted); color: var(--foreground); font-size: 13px; overflow-wrap: anywhere; }
+.automation-status[data-status="blocked"], .automation-status[data-status="awaiting_recovery"] { border-color: var(--danger); }
+.automation-status[data-status="paused"], .automation-status[data-status="retry_wait"] { border-color: var(--accent); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }

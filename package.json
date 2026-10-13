@@ -1,30 +1,45 @@
 {
   "name": "night-port-mcp-game",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "description": "《不夜港：最后一班船》多人策略游戏规则引擎与 MCP 服务器",
   "scripts": {
     "start": "tsx src/authoritative-server.ts",
+    "start:supervised": "tsx scripts/supervise-server.ts",
     "test": "tsx --test tests/**/*.test.ts",
     "typecheck": "tsc --noEmit",
     "smoke:mcp": "tsx scripts/mcp-smoke.ts",
     "demo:seed": "tsx scripts/create-demo-game.ts",
+    "referee": "tsx scripts/window-referee.ts",
     "stdio": "tsx src/mcp-server.ts",
-    "web": "tsx src/authoritative-server.ts"
+    "web": "tsx src/authoritative-server.ts",
+    "cloud:dev": "wrangler dev --config cloud/wrangler.jsonc",
+    "cloud:deploy": "wrangler deploy --config .local/cloud/wrangler.jsonc",
+    "cloud:setup": "node scripts/cloud-setup.mjs",
+    "cloud:admin": "node scripts/cloud-admin.mjs",
+    "test:cloud": "tsx --test tests/cloud-store.test.ts tests/cloud-security.test.ts",
+    "build:cloud": "wrangler deploy --dry-run --config cloud/wrangler.jsonc --outdir .local/cloud-build"
   },
   "dependencies": {
-    "@modelcontextprotocol/client": "latest",
+    "@cloudflare/workers-oauth-provider": "1.2.3",
+    "@modelcontextprotocol/client": "2.0.0",
     "@modelcontextprotocol/node": "^2.0.0",
-    "@modelcontextprotocol/server": "latest",
-    "zod": "latest"
+    "@modelcontextprotocol/server": "2.0.0",
+    "zod": "4.4.3"
   },
   "devDependencies": {
-    "@types/node": "latest",
-    "tsx": "latest",
-    "typescript": "latest"
+    "@types/node": "26.3.0",
+    "tsx": "4.23.12",
+    "typescript": "7.0.2",
+    "wrangler": "4.149.0"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RRRachel000/night-port-mcp-game.git"
   }
 }

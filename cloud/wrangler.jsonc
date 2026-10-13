@@ -1,0 +1,14 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "night-port-private",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-10-12",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": { "enabled": false },
+  "assets": { "directory": "../public", "binding": "ASSETS", "run_worker_first": true },
+  "durable_objects": { "bindings": [{ "name": "AUTHORITY", "class_name": "NightPortAuthority" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["NightPortAuthority"] }],
+  "kv_namespaces": [{ "binding": "OAUTH_KV", "id": "REPLACE_WITH_YOUR_OWN_KV_NAMESPACE_ID" }]
+}

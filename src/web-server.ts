@@ -4,6 +4,7 @@ import { extname, resolve } from "node:path";
 
 import { GameRuleError } from "./engine.js";
 import { GameStore } from "./store.js";
+import type { WindowCoordinator } from "./window-coordinator.js";
 
 const publicDirectory = resolve("public");
 
@@ -25,12 +26,17 @@ function sendJson(response: ServerResponse, status: number, body: unknown): void
 
 type McpRequestHandler = (request: IncomingMessage, response: ServerResponse) => Promise<void>;
 
-export function createWebServer(store: GameStore, mcpRequestHandler?: McpRequestHandler) {
+export function createWebServer(store: GameStore, mcpRequestHandler?: McpRequestHandler, windows?: { coordinator: WindowCoordinator; handleControl: McpRequestHandler }) {
   return createServer(async (request, response) => {
   try {
     const url = new URL(request.url ?? "/", `http://${request.headers.host ?? "127.0.0.1"}`);
-    if (url.pathname === "/mcp" && mcpRequestHandler !== undefined) {
+    if ((url.pathname === "/mcp" || /^\/mcp\/seat\/[a-f0-9]{64}$/.test(url.pathname)) && mcpRequestHandler !== undefined) {
       await mcpRequestHandler(request, response);
+      return;
+    }
+
+    if (url.pathname === "/api/referee" && windows !== undefined) {
+      await windows.handleControl(request, response);
       return;
     }
 
@@ -68,7 +74,8 @@ export function createWebServer(store: GameStore, mcpRequestHandler?: McpRequest
     const stateMatch = /^\/api\/games\/([A-Za-z0-9_-]+)$/.exec(url.pathname);
     if (stateMatch !== null) {
       const game = store.get(stateMatch[1]!);
-      sendJson(response, 200, { ok: true, ...game.publicState({ includeProfitEstimates: true }) });
+      sendJson(response, 200, { ok: true, ...game.publicState({ includeProfitEstimates: true }),
+        ...(windows === undefined ? {} : { automation: windows.coordinator.publicStatus(stateMatch[1]!) }) });
       return;
     }
 
